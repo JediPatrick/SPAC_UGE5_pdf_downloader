@@ -3,12 +3,14 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
-class FTPService:
+class FTPService: ## make the connect the first function to be called
     def __init__ (self):
         self.ftp = None
 
-    def getListOfExsistingFiles(self):
-        return self.ftp.nlst()
+    def getDictOfExsistingFiles(self):
+        listOfExsistingFiles = self.ftp.nlst()
+        hashTableOfExsistingFiles = {item: True for item in listOfExsistingFiles}
+        return hashTableOfExsistingFiles
 
     def connect(self):
         try:
@@ -23,10 +25,11 @@ class FTPService:
             self.ftp.quit()
             return (False, f"Connection failed {e}")
         
-    def uploadFiles(self, filename):
+    def uploadFile(self, filename):
         try:
-            with open(filename, 'rb') as file:
+            with open(f"pdf/{filename}", 'rb') as file:
                 self.ftp.storbinary(f'STOR {filename}', file)
+            return (True, "successfully uploaded")
         except Exception as e:
             return (False, f"Connection failed {e}")        
 
@@ -43,3 +46,18 @@ class FTPService:
                 result = future.result()
                 results.append(result)
         return results
+
+    def uploadFiles(self, df):
+        exsistingFiles = self.getDictOfExsistingFiles()
+        for index, row in df.iterrows():
+            #    print(f"Row {index}:")
+            if row["PDF_URL_downloaded"]:
+                filename = f"{row["BRnum"]}.pdf"
+                if filename in exsistingFiles:
+                    print(f"file exist {filename}")
+                else:
+                    status = self.uploadFile(filename)                
+                    if status[0]:
+                        df.loc[index, "uploaded_To_FTP"] = True
+           # if index > 20:
+           #     break
