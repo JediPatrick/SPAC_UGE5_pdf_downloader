@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
-class ftpService:
+class FTPService:
     def __init__ (self):
         self.ftp = None
 

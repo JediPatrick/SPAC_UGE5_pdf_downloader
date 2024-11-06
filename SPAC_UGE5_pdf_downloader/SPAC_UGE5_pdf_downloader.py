@@ -3,30 +3,29 @@ import pandas as pd
 import requests 
 import concurrent.futures
 
-from ftpService import ftpService
+from ftpService import FTPService
 
 def validateURL(url):
     parsed_url = urlparse(url)
     return bool(parsed_url.scheme) and bool(parsed_url.netloc)
 
 def downloadPDF(url, file_path):
-    if pd.notnull(url) and validateURL(url):
-        try:
-            response = requests.get(url, stream=True)  # stream=True allows handling large files better
-            if response.status_code == 200:
-                content_type = response.headers.get("Content-Type")
-                if content_type == "application/pdf":
-                    with open(file_path, 'wb') as pdf_file:
-                        pdf_file.write(response.content)
-                    return (True, f"PDF downloaded successfully: {file_path}")
-                else:
-                    return (False, f"No PDF found at the specified URL. Content-Type: {content_type}")
-            else:
-                return (False, f"Failed to download PDF. Status code: {response.status_code}")
-        except Exception as e:
-            return (False, f"Failed to download PDF. Error: {e}")
-    else:
-        return (False, f"The given url is not an URL {url}")
+    if pd.isnull(url) or not validateURL(url):
+        return (False, f"The given url is not an URL {url}") 
+
+    try:
+        response = requests.get(url, stream=True)  # stream=True allows handling large files better
+        if response.status_code != 200:
+            return (False, f"Failed to download PDF. Status code: {response.status_code}")
+        content_type = response.headers.get("Content-Type")
+        if content_type != "application/pdf":
+            return (False, f"No PDF found at the specified URL. Content-Type: {content_type}")
+        with open(file_path, 'wb') as pdf_file:
+            pdf_file.write(response.content)
+        return (True, f"PDF downloaded successfully: {file_path}")
+
+    except Exception as e:
+        return (False, f"Failed to download PDF. Error: {e}")
 
 def importFile():
     # Load the Excel file into a DataFrame
@@ -50,8 +49,8 @@ for index, row in df.iterrows():
         status = downloadPDF(row["Pdf_URL"], file_path_pdf)
         if status[0]:
             row["PDF_URL_downloaded"] = True
-           # print(status[1])
         else:
+            print(status[1])
             row["download_message"] = f"Error {status[1]}"
             if pd.notnull(row["Report Html Address"]):
                 statusSecond = downloadPDF(row["Report Html Address"], file_path_pdf)
@@ -64,9 +63,11 @@ for index, row in df.iterrows():
     if index > 20:
         break
     
-ftpservice = ftpService()
-ftpservice.connect()
-listOfFiles = ftpservice.getListOfExsistingFiles()
+ftpService = FTPService()
+ftpService.connect()
+listOfFiles = ftpService.getListOfExsistingFiles()
+ftpService.closeConnection()
+
 #    print(row)
 
     
