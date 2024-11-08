@@ -38,14 +38,14 @@ def downloadPDF(url, file_path):
         return Status(False, f"Failed to download PDF. Error: {e}")
 
 
-def processPDFDownloadsInParallel(df):
+def processPDFDownloadsInParallel(df, numChunks, threadsPerChunks):
     # Split the DataFrame into chunks
-    num_chunks = 2
-    df_chunks = np.array_split(df, num_chunks)
+    df_chunks = np.array_split(df, numChunks)
     
     # Process each chunk into Pools for better update preformance on the df
+    arguments = [(chunk, threadsPerChunks) for chunk in df_chunks]    
     with Pool() as pool:
-        results = pool.map(processPDFDownloadChunk, df_chunks)
+        results = pool.starmap(processPDFDownloadChunk, arguments)
     
     # Combine the processed chunks back into a single DataFrame
     final_df = pd.concat(results, ignore_index=True)
@@ -69,18 +69,16 @@ def processPDFDownload(index_row_tuple):
                 result["PDF_URL_downloaded"] = True
                 result["download_message"] = "Report Html Address was used"
             else:
-                # Append error message from second attempt
                 result["download_message"] = f"Error {status.message} | error from Report Html Address: {statusSecond.message}"
         else:
             result["download_message"] = f"Error {status.message}"
-        print(status.message)
+        print(f"BRnummer {row['BRnum']}: {status.message}")
     return index, result  # Return index to know where to update the DataFrame
 
 
-def processPDFDownloadChunk(df_chunks):
+def processPDFDownloadChunk(df_chunks, max_threads):
     # Use ThreadPoolExecutor to process each row in parallel 
     # becuase its heavly based on I/O operations and ThreadPoolExecutor is good for that
-    max_threads = 2
     # Use max_threads to limit concurrent threads in the ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=max_threads) as executor:
         results = list(executor.map(processPDFDownload, df_chunks.iterrows()))
