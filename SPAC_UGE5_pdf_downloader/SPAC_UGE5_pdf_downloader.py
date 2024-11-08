@@ -18,25 +18,18 @@ def importFile():
 def main():
     df = importFile()
     processPDFDownloadsInParallel(df)
-    processPDFDownloads(df)
     
-        
     ftpService = FTPService()
     ftpService.connect()
     ftpService.uploadFiles(df)
     ftpService.closeConnection()
 
 
-# This block checks if the script is being run directly
 if __name__ == "__main__":
     main()
 
 
 
-    
-
-# Display the first few rows
-#print(df.head())
 
 
 

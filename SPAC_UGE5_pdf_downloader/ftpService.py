@@ -17,7 +17,7 @@ class FTPService: ## make the connect the first function to be called
             load_dotenv(r"C:\credFolder\cred.env")  # Load .env file to geet cred
             username = os.getenv("MY_APP_USERNAME")
             password = os.getenv("MY_APP_PASSWORD")
-            # Connect to the server and log in
+
             self.ftp = FTP('localhost')
             self.ftp.login(user=username, passwd=password) 
             return (True, "successfully connected")
@@ -59,5 +59,3 @@ class FTPService: ## make the connect the first function to be called
                     status = self.uploadFile(filename)                
                     if status[0]:
                         df.loc[index, "uploaded_To_FTP"] = True
-           # if index > 20:
-           #     break
