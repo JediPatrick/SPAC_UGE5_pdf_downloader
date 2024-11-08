@@ -1,5 +1,5 @@
 import pandas as pd
-from downloadService import processPDFDownloads
+from downloadService import processPDFDownloads, processPDFDownloadsInParallel
 from ftpService import FTPService
 
 def importFile():
@@ -14,18 +14,29 @@ def importFile():
         df['download_message'] = ""
     return df
 
-df = importFile()
-processPDFDownloads(df)
 
+def main():
+    df = importFile()
+    processPDFDownloadsInParallel(df)
+    processPDFDownloads(df)
     
-ftpService = FTPService()
-ftpService.connect()
-ftpService.uploadFiles(df)
-ftpService.closeConnection()
+        
+    ftpService = FTPService()
+    ftpService.connect()
+    ftpService.uploadFiles(df)
+    ftpService.closeConnection()
+
+
+# This block checks if the script is being run directly
+if __name__ == "__main__":
+    main()
+
+
+
     
 
 # Display the first few rows
-print(df.head())
+#print(df.head())
 
 
 

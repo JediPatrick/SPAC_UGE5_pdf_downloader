@@ -36,11 +36,11 @@ class FTPService: ## make the connect the first function to be called
     def closeConnection(self):
         self.ftp.quit()
 
-    def uploadFilesInParallel(self, filenames):
+    def uploadFilesInParallel(self, df):
         results = []
         with ThreadPoolExecutor() as executor:
             # Submit each file upload as a separate task
-            futures = {executor.submit(self.uploadFile, filename): filename for filename in filenames}
+            futures = {executor.submit(self.uploadFile, filename): filename for filename in df}
             for future in as_completed(futures):
                 # Collect the result of each upload
                 result = future.result()
