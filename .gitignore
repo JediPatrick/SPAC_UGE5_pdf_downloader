@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Removes VE from github
+.SPAC_UGE5_pdf_downloader/
