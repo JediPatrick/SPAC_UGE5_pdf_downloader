@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Removes VE from github
 .SPAC_UGE5_pdf_downloader/
 /SPAC_UGE5_pdf_downloader/env
+/SPAC_UGE5_pdf_downloader/pdf
