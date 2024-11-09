@@ -52,7 +52,7 @@ def processPDFDownloadsInParallel(df, numChunks, threadsPerChunks):
     return final_df
 
 
-def processPDFDownload(index_row_tuple):
+def processPDFDownload(index_row_tuple): # TODO refactor this function to work as a loop
     index, row = index_row_tuple 
     result = row.copy()  # Create a copy of the row to avoid changing the original DataFrame
     if not row["PDF_URL_downloaded"]:
@@ -72,16 +72,16 @@ def processPDFDownload(index_row_tuple):
                 result["download_message"] = f"Error {status.message} | error from Report Html Address: {statusSecond.message}"
         else:
             result["download_message"] = f"Error {status.message}"
-        print(f"BRnummer {row['BRnum']}: {status.message}")
+        print(f"index {index} BRnummer {row['BRnum']}: {status.message}")
     return index, result  # Return index to know where to update the DataFrame
 
 
 def processPDFDownloadChunk(df_chunks, max_threads):
     # Use ThreadPoolExecutor to process each row in parallel 
     # becuase its heavly based on I/O operations and ThreadPoolExecutor is good for that
-    # Use max_threads to limit concurrent threads in the ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=max_threads) as executor:
-        results = list(executor.map(processPDFDownload, df_chunks.iterrows()))
+        results = list(executor.map(processPDFDownload, df_chunks.iterrows(), timeout=10))
+
     
     # Apply changes back to the DataFrame as the last step 
     # to not slow down the download threads becuase updating 

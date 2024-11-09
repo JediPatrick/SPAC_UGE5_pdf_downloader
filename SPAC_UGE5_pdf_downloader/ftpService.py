@@ -3,9 +3,13 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
-class FTPService: ## make the connect the first function to be called
-    def __init__ (self):
+## the current FTP service does not handle threads well and is not thread safe prefereably another package should be used
+# TODO: refactor this class to aiosftp
+class FTPService: 
+    def __init__ (self, envfile, host):
         self.ftp = None
+        self.host = host 
+        self.envfile = envfile
 
     def getDictOfExsistingFiles(self):
         listOfExsistingFiles = self.ftp.nlst()
@@ -14,11 +18,11 @@ class FTPService: ## make the connect the first function to be called
 
     def connect(self):
         try:
-            load_dotenv(r"C:\credFolder\cred.env")  # Load .env file to geet cred
+            load_dotenv(self.envfile)  # Load .env file to geet cred
             username = os.getenv("MY_APP_USERNAME")
             password = os.getenv("MY_APP_PASSWORD")
 
-            self.ftp = FTP('localhost')
+            self.ftp = FTP(self.envfile)
             self.ftp.login(user=username, passwd=password) 
             return (True, "successfully connected")
         except Exception as e:
@@ -36,7 +40,7 @@ class FTPService: ## make the connect the first function to be called
     def closeConnection(self):
         self.ftp.quit()
 
-    def uploadFilesInParallel(self, df):
+    def uploadFilesInParallel(self, df): # parrallel is not ready to test 
         results = []
         with ThreadPoolExecutor() as executor:
             # Submit each file upload as a separate task

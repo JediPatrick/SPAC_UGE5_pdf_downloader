@@ -27,13 +27,15 @@ def main():
     chucksPerThreat = config.getint("settings", "chucksPerThreat")
 
     df = importFile(excelFilePath)
-    processPDFDownloadsInParallel(df, chunks, chucksPerThreat)
+    df = processPDFDownloadsInParallel(df, chunks, chucksPerThreat)
     
-    ftpService = FTPService()
+    ftpService = FTPService(ftpUserEnvFilePath, ftpHost)
     ftpService.connect()
     ftpService.uploadFiles(df)
     ftpService.closeConnection()
 
+    # update excel file, TODO: prederably only the updated coloumns should be updated 
+    df.to_excel(excelFilePath, index=False) 
 
 if __name__ == "__main__":
     main()
